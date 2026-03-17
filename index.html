@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快樂過新年 - 國小A班互動遊戲</title>
+    <title>快樂過新年 - 互動遊戲教學</title>
     <style>
         :root {
-            --new-year-red: #d32f2f;
-            --gold: #ffd700;
-            --paper-white: #fefae0;
+            /* 換成柔和的紅色與米色，降低視覺壓力 */
+            --soft-red: #e57373;
+            --deep-red: #c62828;
+            --warm-bg: #fff5f5;
+            --gold-text: #fbc02d;
+            --paper-white: #ffffff;
         }
 
         body {
-            font-family: "Microsoft JhengHei", sans-serif;
-            background-color: var(--new-year-red);
-            color: white;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: var(--warm-bg);
+            color: #444;
             margin: 0;
             display: flex;
             flex-direction: column;
@@ -22,155 +25,180 @@
             min-height: 100vh;
         }
 
+        /* 頂部裝飾區 */
         header {
             text-align: center;
-            padding: 20px;
-            border-bottom: 3px solid var(--gold);
+            padding: 30px 20px;
+            background-color: var(--soft-red);
+            color: white;
             width: 100%;
-            background: rgba(0,0,0,0.1);
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* 加入可愛的裝飾圖案 (使用 CSS 繪製燈籠) */
+        header::before, header::after {
+            content: "🏮";
+            font-size: 50px;
+            position: absolute;
+            top: 20px;
+            opacity: 0.8;
+        }
+        header::before { left: 10%; }
+        header::after { right: 10%; }
+
+        h1 { margin: 10px 0; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+
+        .menu {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+            z-index: 10;
+        }
+
+        .menu button {
+            background: white;
+            color: var(--deep-red);
+            border: 2px solid var(--soft-red);
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+        }
+
+        .menu button:hover {
+            background: var(--soft-red);
+            color: white;
+            transform: translateY(-3px);
         }
 
         .container {
             width: 90%;
-            max-width: 800px;
-            background: white;
-            color: #333;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            display: none; /* 初始隱藏 */
+            max-width: 700px;
+            background: var(--paper-white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(229, 115, 115, 0.15);
+            display: none;
+            border: 3px solid #fce4ec;
+            position: relative;
         }
 
-        .active { display: block; }
-
-        /* 遊戲選單 */
-        .menu {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 20px;
+        /* 旁邊加個可愛小裝飾 (雲紋) */
+        .container::after {
+            content: "☁️";
+            position: absolute;
+            bottom: -20px;
+            right: 20px;
+            font-size: 40px;
+            opacity: 0.5;
         }
 
-        button {
-            background: var(--new-year-red);
-            color: var(--gold);
-            border: 2px solid var(--gold);
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.3s;
-        }
+        .active { display: block; animation: fadeIn 0.5s; }
 
-        button:hover {
-            background: var(--gold);
-            color: var(--new-year-red);
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 知識問答樣式 */
+        /* 問答與寫字區調整 */
         .quiz-option {
-            display: block;
-            width: 100%;
+            background: #fff9f9;
+            border: 2px solid #ffcdd2;
             padding: 15px;
             margin: 10px 0;
-            background: #f0f0f0;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
+            border-radius: 12px;
             cursor: pointer;
+            transition: 0.2s;
         }
 
-        /* 畫布樣式 */
+        .quiz-option:hover { background: #ffebee; border-color: var(--soft-red); }
+
         #writing-canvas {
-            border: 2px dashed var(--new-year-red);
-            background: #fff;
-            cursor: crosshair;
+            border: 4px solid #eeeeee;
+            background: #fafafa;
+            border-radius: 10px;
+            touch-action: none;
             display: block;
             margin: 0 auto;
-            touch-action: none;
         }
 
-        .canvas-controls {
-            text-align: center;
-            margin-top: 10px;
+        .char-btn {
+            background: #fff;
+            border: 2px solid #eee;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 10px;
         }
+        .char-btn.active { border-color: var(--soft-red); background: #fff5f5; }
 
-        .character-guide {
-            font-size: 80px;
-            color: rgba(211, 47, 47, 0.2);
-            position: absolute;
-            pointer-events: none;
-            user-select: none;
-        }
-
-        /* 響應式 */
-        @media (max-width: 600px) {
-            canvas { width: 100%; height: auto; }
-        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🧧 快樂過新年 🧧</h1>
-    <p>國小A班 互動教學網頁</p>
+    <h1>快樂過新年</h1>
+    <p>國小A班 - 小班長互動專區</p>
 </header>
 
 <div class="menu">
     <button onclick="showSection('intro')">新年習俗</button>
-    <button onclick="showSection('quiz')">知識小學堂</button>
-    <button onclick="showSection('writing')">一起寫春聯</button>
+    <button onclick="showSection('quiz')">知識挑戰</button>
+    <button onclick="showSection('writing')">寫寫春聯</button>
 </div>
 
 <div id="intro" class="container active">
-    <h2>新年做什麼？</h2>
-    <ul>
-        <li>大家一起吃團圓飯 [cite: 25]</li>
-        <li>穿新衣、戴新帽 [cite: 7, 15]</li>
-        <li>寫春聯、貼紅包 [cite: 20, 22]</li>
+    <h2 style="color: var(--deep-red);">🧧 新年會做什麼？</h2>
+    <p>在農曆新年，我們會：</p>
+    <ul style="line-height: 2;">
+        <li><strong>吃團圓飯：</strong> 全家人聚在一起。</li>
+        <li><strong>穿新衣：</strong> 迎接新的一年。</li>
+        <li><strong>寫書法：</strong> 練習寫「春」、「福」字。</li>
     </ul>
-    <p>想一想，你們家怎麼過新年？ [cite: 17]</p>
+    <p>這是一個充滿喜氣與慶祝的季節！</p>
 </div>
 
 <div id="quiz" class="container">
-    <h2 id="quiz-question">載入題目中...</h2>
+    <h2 id="quiz-question" style="color: var(--deep-red);">載入中...</h2>
     <div id="quiz-options"></div>
-    <p id="quiz-feedback" style="text-align:center; font-weight:bold;"></p>
+    <p id="quiz-feedback" style="text-align:center; font-size: 1.2rem;"></p>
 </div>
 
 <div id="writing" class="container">
-    <h2>一起來寫字 [cite: 20]</h2>
-    <p>請選擇一個字練習：</p>
-    <div style="text-align:center; margin-bottom:10px;">
-        <button onclick="setGuide('春')">春</button>
-        <button onclick="setGuide('福')">福</button>
-        <button onclick="setGuide('吉')">吉</button>
+    <h2 style="color: var(--deep-red);">🏮 一起來寫字</h2>
+    <div style="text-align:center; margin-bottom:15px;">
+        <button class="char-btn" onclick="setGuide('春', this)">春</button>
+        <button class="char-btn" onclick="setGuide('福', this)">福</button>
+        <button class="char-btn" onclick="setGuide('喜', this)">喜</button>
+        <button class="char-btn" onclick="setGuide('財', this)">財</button>
     </div>
+    
     <div style="position: relative; width: 300px; margin: 0 auto;">
-        <div id="canvas-text-guide" class="character-guide" style="top:50%; left:50%; transform:translate(-50%, -50%);">春</div>
+        <div id="canvas-guide-text" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:180px; color:rgba(0,0,0,0.05); pointer-events:none; font-family:'KaiTi', 'DFKai-SB';">春</div>
         <canvas id="writing-canvas" width="300" height="300"></canvas>
     </div>
-    <div class="canvas-controls">
-        <button onclick="clearCanvas()">清除重寫</button>
-        <button onclick="downloadCanvas()">下載作品</button>
+
+    <div style="text-align:center; margin-top:20px;">
+        <button onclick="clearCanvas()" style="background:#f5f5f5; color:#666; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">重寫</button>
+        <button onclick="downloadCanvas()" style="background:var(--soft-red); color:white; border:none; padding:10px 20px; border-radius:5px; margin-left:10px; cursor:pointer;">儲存我的春聯</button>
     </div>
 </div>
 
 <script>
-    // 1. 頁面切換邏輯
     function showSection(id) {
         document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(id === 'writing') initCanvas();
     }
 
-    // 2. 知識問答邏輯
+    // 問答邏輯
     const quizData = [
-        { q: "新年通常是在什麼時候？", options: ["春天", "夏天", "秋天"], correct: 0 },
-        { q: "過年時，我們通常會貼什麼顏色的紙在門上？", options: ["藍色", "黃色", "紅色"], correct: 2 },
-        { q: "吃團圓飯代表大家聚在一起，對嗎？", options: ["T (正確)", "F (錯誤)"], correct: 0 }
+        { q: "「跨、年、新」可以組成哪個詞？", options: ["跨新年", "年新年", "新新跨"], correct: 0 },
+        { q: "過年時大家會說什麼祝福的話？", options: ["生日快樂", "恭喜發財", "端午節快樂"], correct: 1 },
+        { q: "投影片中的「小班長」是指誰？", options: ["老師", "班上的領導小幫手", "校長"], correct: 1 }
     ];
     let currentQuiz = 0;
 
@@ -180,45 +208,39 @@
         const optionsDiv = document.getElementById('quiz-options');
         optionsDiv.innerHTML = '';
         quiz.options.forEach((opt, idx) => {
-            const btn = document.createElement('div');
-            btn.className = 'quiz-option';
-            btn.innerText = opt;
-            btn.onclick = () => checkAnswer(idx);
-            optionsDiv.appendChild(btn);
+            const div = document.createElement('div');
+            div.className = 'quiz-option';
+            div.innerText = opt;
+            div.onclick = () => {
+                const feedback = document.getElementById('quiz-feedback');
+                if(idx === quiz.correct) {
+                    feedback.innerText = "❤️ 答對了！你真棒！";
+                    setTimeout(() => {
+                        currentQuiz = (currentQuiz + 1) % quizData.length;
+                        feedback.innerText = "";
+                        loadQuiz();
+                    }, 1500);
+                } else {
+                    feedback.innerText = "💡 再想一下喔！";
+                }
+            };
+            optionsDiv.appendChild(div);
         });
     }
 
-    function checkAnswer(idx) {
-        const feedback = document.getElementById('quiz-feedback');
-        if(idx === quizData[currentQuiz].correct) {
-            feedback.innerText = "⭐ 太棒了！答對了！";
-            feedback.style.color = "green";
-            setTimeout(() => {
-                currentQuiz = (currentQuiz + 1) % quizData.length;
-                feedback.innerText = "";
-                loadQuiz();
-            }, 1500);
-        } else {
-            feedback.innerText = "❌ 再試一次看看喔！";
-            feedback.style.color = "red";
-        }
-    }
-
-    // 3. 畫布書寫邏輯
+    // 畫布邏輯
     let canvas, ctx, painting = false;
-
     function initCanvas() {
         canvas = document.getElementById('writing-canvas');
         ctx = canvas.getContext('2d');
-        ctx.lineWidth = 8;
+        ctx.lineWidth = 12;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = '#000';
+        ctx.strokeStyle = '#333';
 
         canvas.onmousedown = (e) => { painting = true; draw(e); };
         canvas.onmouseup = () => { painting = false; ctx.beginPath(); };
         canvas.onmousemove = draw;
         
-        // 觸控支援
         canvas.ontouchstart = (e) => { painting = true; draw(e.touches[0]); e.preventDefault(); };
         canvas.ontouchend = () => { painting = false; ctx.beginPath(); };
         canvas.ontouchmove = (e) => { draw(e.touches[0]); e.preventDefault(); };
@@ -231,27 +253,15 @@
         ctx.stroke();
     }
 
-    function clearCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-
-    function setGuide(char) {
-        document.getElementById('canvas-text-guide').innerText = char;
+    function setGuide(char, btn) {
+        document.getElementById('canvas-guide-text').innerText = char;
+        document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         clearCanvas();
     }
 
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
     function downloadCanvas() {
         const link = document.createElement('a');
-        link.download = '我的春聯.png';
-        link.href = canvas.toDataURL();
-        link.click();
-    }
-
-    // 初始化載入
-    window.onload = () => {
-        loadQuiz();
-    };
-</script>
-
-</body>
-</html>
+        link.download =
