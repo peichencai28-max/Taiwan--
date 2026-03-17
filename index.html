@@ -1,24 +1,6 @@
 <!DOCTYPE html>
-<html>
 <html lang="zh-Hant">
 <head>
-<title>可愛版貪吃蛇</title>
-<style>
-body {
-  background-color: #f0f8ff; /* 淺藍色背景 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
-
-#gameCanvas {
-  background-color: #fce4ec; /* 柔和的粉紅色遊戲背景 */
-  border: 5px solid #ff80ab; /* 柔和的粉紅色邊框 */
-  border-radius: 10px; /* 圓角邊框 */
-}
-</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新年快樂 - 互動遊戲教室</title>
@@ -41,7 +23,6 @@ body {
             min-height: 100vh;
         }
 
-        /* 標題裝飾區 */
         header {
             background-color: var(--soft-red);
             color: white;
@@ -55,7 +36,6 @@ body {
         header h1 { margin: 0; font-size: 2.2rem; letter-spacing: 2px; }
         header .deco { position: absolute; font-size: 40px; top: 20px; }
 
-        /* 按鈕選單 */
         .menu {
             display: flex;
             gap: 12px;
@@ -80,7 +60,6 @@ body {
         .menu button:active { transform: translateY(4px); box-shadow: none; }
         .menu button.active-btn { background: var(--soft-red); color: white; }
 
-        /* 遊戲與內容容器 */
         .container {
             width: 85%;
             max-width: 600px;
@@ -102,7 +81,6 @@ body {
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* 知識問答樣式 */
         .quiz-option {
             background: #fff5f5;
             border: 2px solid #ffdfe0;
@@ -115,7 +93,6 @@ body {
         }
         .quiz-option:hover { background: #ffe3e3; transform: scale(1.02); }
 
-        /* 寫字板樣式 */
         #main-canvas {
             border: 3px solid #ffdfe0;
             background: #fffdfd;
@@ -124,7 +101,6 @@ body {
             cursor: crosshair;
         }
 
-        /* 接紅包遊戲區 */
         #game-stage {
             width: 100%;
             height: 300px;
@@ -134,7 +110,7 @@ body {
             overflow: hidden;
             border: 2px dashed var(--soft-red);
         }
-        #player { position: absolute; bottom: 10px; font-size: 50px; transition: left 0.1s linear; cursor: pointer; }
+        #player { position: absolute; bottom: 10px; font-size: 50px; left: 125px; user-select: none; }
         .falling-item { position: absolute; font-size: 35px; user-select: none; }
 
         .cute-icon { font-size: 50px; margin: 10px; }
@@ -142,7 +118,6 @@ body {
 </head>
 <body>
 
-<canvas id="gameCanvas" width="400" height="400"></canvas>
 <header>
     <span class="deco" style="left: 10%;">🏮</span>
     <h1>新年快樂</h1>
@@ -151,7 +126,7 @@ body {
 </header>
 
 <div class="menu">
-    <button id="btn-intro" onclick="showSection('intro')">🌸 新年故事</button>
+    <button id="btn-intro" class="active-btn" onclick="showSection('intro')">🌸 新年</button>
     <button id="btn-quiz" onclick="showSection('quiz')">💡 知識挑戰</button>
     <button id="btn-writing" onclick="showSection('writing')">🖌️ 寫寫春聯</button>
     <button id="btn-game" onclick="showSection('game')">💰 接紅包囉</button>
@@ -178,9 +153,9 @@ body {
 <div id="writing" class="container">
     <h3 style="color: var(--soft-red);">練習寫個字</h3>
     <div style="margin-bottom: 15px;">
-        <button onclick="updateWord('春')" style="background:#fff; border:1px solid #ddd; padding:5px 15px; border-radius:10px;">春</button>
-        <button onclick="updateWord('福')" style="background:#fff; border:1px solid #ddd; padding:5px 15px; border-radius:10px;">福</button>
-        <button onclick="updateWord('吉')" style="background:#fff; border:1px solid #ddd; padding:5px 15px; border-radius:10px;">吉</button>
+        <button onclick="updateWord('春')">春</button>
+        <button onclick="updateWord('福')">福</button>
+        <button onclick="updateWord('吉')">吉</button>
     </div>
     <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
         <div id="word-bg" style="position:absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:220px; color:#fceaea; pointer-events:none;">春</div>
@@ -191,84 +166,16 @@ body {
 
 <div id="game" class="container">
     <h3 style="color: var(--soft-red);">接紅包大挑戰</h3>
+    <p>剩餘時間：<span id="game-time" style="color:red; font-weight:bold;">30</span> 秒</p>
     <p>分數：<span id="score-val" style="font-size: 1.5rem; font-weight: bold;">0</span></p>
     <div id="game-stage">
         <div id="player">🐱</div>
     </div>
     <p style="font-size: 0.8rem; color: #999; margin-top: 10px;">( 點擊畫面左右邊來移動小貓 )</p>
-    <button onclick="startGame()" style="background:#55efc4; color:white; border:none; padding:10px 30px; border-radius:20px; font-weight:bold; cursor:pointer;">開始遊戲</button>
+    <button id="start-btn" onclick="startGame()" style="background:#55efc4; color:white; border:none; padding:10px 30px; border-radius:20px; font-weight:bold; cursor:pointer;">開始遊戲</button>
 </div>
 
 <script>
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-const gridSize = 20;
-let snake = [{ x: 10, y: 10 }];
-let food = {};
-let direction = "right";
-let score = 0;
-let gameInterval;
-
-// 可愛的小圖案 (這裡使用簡單的圓形和愛心代替)
-function drawSnakePart(part) {
-  ctx.fillStyle = "#ff80ab"; /* 柔和的粉紅色蛇 */
-  ctx.beginPath();
-  ctx.arc(part.x * gridSize + gridSize / 2, part.y * gridSize + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawFood() {
-  ctx.fillStyle = "#ffc107"; /* 黃色食物 */
-  ctx.beginPath();
-  // 畫一個簡單的愛心形狀
-  ctx.moveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
-  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize, food.y * gridSize, food.x * gridSize, food.y * gridSize + gridSize / 4);
-  ctx.bezierCurveTo(food.x * gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize);
-  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 4);
-  ctx.bezierCurveTo(food.x * gridSize + gridSize, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
-  ctx.fill();
-}
-
-// 遊戲邏輯
-function gameLoop() {
-  // 移動蛇
-  const head = { x: snake[0].x, y: snake[0].y };
-  switch (direction) {
-    case "up": head.y--; break;
-    case "down": head.y++; break;
-    case "left": head.x--; break;
-    case "right": head.x++; break;
-  }
-  snake.unshift(head);
-
-  // 檢查是否吃到食物
-  if (head.x === food.x && head.y === food.y) {
-    score++;
-    generateFood();
-  } else {
-    snake.pop();
-  }
-
-  // 檢查是否碰撞
-  if (head.x < 0 || head.x >= canvas.width / gridSize || head.y < 0 || head.y >= canvas.height / gridSize || checkCollision()) {
-    clearInterval(gameInterval);
-    alert("遊戲結束！得分：" + score);
-  }
-
-  // 清除畫布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 繪制蛇和食物
-  snake.forEach(drawSnakePart);
-  drawFood();
-}
-
-// 檢查蛇是否撞到自己
-function checkCollision() {
-  for (let i = 1; i < snake.length; i++) {
-    if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
-      return true;
     // 1. 分頁切換
     function showSection(id) {
         document.querySelectorAll('.container').forEach(c => c.classList.remove('show'));
@@ -280,33 +187,8 @@ function checkCollision() {
         if(id === 'quiz') startQuiz();
         if(id === 'game') resetGame();
     }
-  }
-  return false;
-}
 
-// 隨機生成食物
-function generateFood() {
-  food = {
-    x: Math.floor(Math.random() * (canvas.width / gridSize)),
-    y: Math.floor(Math.random() * (canvas.height / gridSize))
-  };
-}
-
-// 處理鍵盤輸入
-document.addEventListener("keydown", e => {
-  switch (e.key) {
-    case "ArrowUp": if (direction !== "down") direction = "up"; break;
-    case "ArrowDown": if (direction !== "up") direction = "down"; break;
-    case "ArrowLeft": if (direction !== "right") direction = "left"; break;
-    case "ArrowRight": if (direction !== "left") direction = "right"; break;
-  }
-});
-
-// 開始遊戲
-generateFood();
-gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
-
-    // 2. 知識問答 (5題)
+    // 2. 知識問答
     const questions = [
         { q: "新年通常是在什麼時候？", a: ["春天", "夏天", "秋天"], c: 0 },
         { q: "過年時，我們喜歡用什麼顏色裝飾？", a: ["藍色", "黑色", "紅色"], c: 2 },
@@ -338,9 +220,10 @@ gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
                     feedback.innerText = "💖 太棒了！答對囉！";
                     feedback.style.color = "#ff7675";
                     setTimeout(() => {
-                        curQ = (curQ + 1) % questions.length;
-                        showQ();
-                    }, 1200);
+                        curQ = curQ + 1;
+                        if(curQ < questions.length) showQ();
+                        else feedback.innerText = "🏆 恭喜完成所有挑戰！";
+                    }, 1000);
                 } else {
                     feedback.innerText = "😯 哎呀，再試一次！";
                     feedback.style.color = "#fab1a0";
@@ -351,34 +234,36 @@ gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
         document.getElementById('q-count').innerText = `第 ${curQ + 1} / 5 題`;
     }
 
-    // 3. 畫布繪圖
-    let canvas, ctx, isDrawing = false;
+    // 3. 畫布繪圖 (寫春聯)
+    let w_canvas, w_ctx, isDrawing = false;
     function initDrawing() {
-        canvas = document.getElementById('main-canvas');
-        ctx = canvas.getContext('2d');
-        ctx.lineWidth = 10;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = '#2d3436';
+        w_canvas = document.getElementById('main-canvas');
+        w_ctx = w_canvas.getContext('2d');
+        w_ctx.lineWidth = 8;
+        w_ctx.lineCap = 'round';
+        w_ctx.strokeStyle = '#f1c40f'; // 修改為金色筆跡
 
         const getPos = (e) => {
-            const r = canvas.getBoundingClientRect();
+            const r = w_canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return { x: clientX - r.left, y: clientY - r.top };
         };
 
-        const start = (e) => { isDrawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-        const move = (e) => { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+        const start = (e) => { isDrawing = true; const p = getPos(e); w_ctx.beginPath(); w_ctx.moveTo(p.x, p.y); };
+        const move = (e) => { if(!isDrawing) return; const p = getPos(e); w_ctx.lineTo(p.x, p.y); w_ctx.stroke(); e.preventDefault(); };
         const stop = () => { isDrawing = false; };
 
-        canvas.onmousedown = start; canvas.onmousemove = move; window.onmouseup = stop;
-        canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = stop;
+        w_canvas.onmousedown = start; w_canvas.onmousemove = move; window.onmouseup = stop;
+        w_canvas.ontouchstart = start; w_canvas.ontouchmove = move; w_canvas.ontouchend = stop;
     }
-    function clearCanvas() { ctx.clearRect(0,0,300,300); }
+    function clearCanvas() { if(w_ctx) w_ctx.clearRect(0,0,300,300); }
     function updateWord(w) { document.getElementById('word-bg').innerText = w; clearCanvas(); }
 
-    // 4. 接紅包遊戲
-    let score = 0, playing = false, gameTimer, spawnTimer, packets = [];
+    // 4. 接紅包遊戲 (增加停止時間)
+    let score = 0, playing = false, gameTimer, spawnTimer, countdownTimer;
+    let timeLeft = 30;
+    let packets = [];
     const stage = document.getElementById('game-stage');
     const player = document.getElementById('player');
     let pLeft = 125;
@@ -387,17 +272,29 @@ gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
         playing = false;
         clearInterval(gameTimer);
         clearInterval(spawnTimer);
+        clearInterval(countdownTimer);
         packets.forEach(p => p.remove());
         packets = [];
         score = 0;
+        timeLeft = 30;
         document.getElementById('score-val').innerText = "0";
+        document.getElementById('game-time').innerText = "30";
+        document.getElementById('start-btn').style.display = 'inline-block';
     }
 
     function startGame() {
         if(playing) return;
         resetGame();
         playing = true;
+        document.getElementById('start-btn').style.display = 'none';
         
+        // 倒數計時器
+        countdownTimer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('game-time').innerText = timeLeft;
+            if(timeLeft <= 0) endGame();
+        }, 1000);
+
         stage.onclick = (e) => {
             const r = stage.getBoundingClientRect();
             pLeft = e.clientX - r.left - 25;
@@ -407,21 +304,25 @@ gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
         };
 
         gameTimer = setInterval(() => {
-            packets.forEach((p, idx) => {
+            for(let i = packets.length - 1; i >= 0; i--) {
+                let p = packets[i];
                 let top = parseInt(p.style.top);
                 top += 5;
                 p.style.top = top + 'px';
+                
+                // 碰撞檢測
                 if(top > 240 && top < 290) {
                     let left = parseInt(p.style.left);
                     if(left > pLeft - 30 && left < pLeft + 40) {
                         score++;
                         document.getElementById('score-val').innerText = score;
                         p.remove();
-                        packets.splice(idx, 1);
+                        packets.splice(i, 1);
+                        continue;
                     }
                 }
-                if(top > 300) { p.remove(); packets.splice(idx, 1); }
-            });
+                if(top > 300) { p.remove(); packets.splice(i, 1); }
+            }
         }, 30);
 
         spawnTimer = setInterval(() => {
@@ -435,9 +336,14 @@ gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
         }, 800);
     }
 
-    window.onload = () => {
-        document.getElementById('btn-intro').classList.add('active-btn');
-    };
+    function endGame() {
+        playing = false;
+        clearInterval(gameTimer);
+        clearInterval(spawnTimer);
+        clearInterval(countdownTimer);
+        alert("遊戲時間到！您的得分是：" + score);
+        document.getElementById('start-btn').style.display = 'inline-block';
+    }
 </script>
 
 </body>
