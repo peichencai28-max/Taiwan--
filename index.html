@@ -1,37 +1,125 @@
-        header h1 { margin: 0; font-size: 2.2rem; letter-spacing: 2px; }
-        header .deco { position: absolute; font-size: 40px; top: 20px; }
+<!DOCTYPE html>
+<html>
+<head>
+<title>可愛版貪吃蛇</title>
+<style>
+body {
+  background-color: #f0f8ff; /* 淺藍色背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
 
-        /* 按鈕選單 */
-        .menu {
-            display: flex;
-            gap: 12px;
-            margin: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+#gameCanvas {
+  background-color: #fce4ec; /* 柔和的粉紅色遊戲背景 */
+  border: 5px solid #ff80ab; /* 柔和的粉紅色邊框 */
+  border-radius: 10px; /* 圓角邊框 */
+}
+</style>
+</head>
+<body>
 
-        .menu button {
-            background: white;
-            color: var(--soft-red);
-            border: 2px solid var(--soft-red);
-            padding: 12px 22px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 0px var(--soft-red);
-        }
+<canvas id="gameCanvas" width="400" height="400"></canvas>
 
-        .menu button:active { transform: translateY(4px); box-shadow: none; }
-        .menu button.active-btn { background: var(--soft-red); color: white; }
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-        /* 遊戲與內容容器 */
-        .container {
-            width: 85%;
-            max-width: 600px;
-            background: white;
-            padding: 30px;
-            border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            display: none
+const gridSize = 20;
+let snake = [{ x: 10, y: 10 }];
+let food = {};
+let direction = "right";
+let score = 0;
+let gameInterval;
+
+// 可愛的小圖案 (這裡使用簡單的圓形和愛心代替)
+function drawSnakePart(part) {
+  ctx.fillStyle = "#ff80ab"; /* 柔和的粉紅色蛇 */
+  ctx.beginPath();
+  ctx.arc(part.x * gridSize + gridSize / 2, part.y * gridSize + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawFood() {
+  ctx.fillStyle = "#ffc107"; /* 黃色食物 */
+  ctx.beginPath();
+  // 畫一個簡單的愛心形狀
+  ctx.moveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize, food.y * gridSize, food.x * gridSize, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
+  ctx.fill();
+}
+
+// 遊戲邏輯
+function gameLoop() {
+  // 移動蛇
+  const head = { x: snake[0].x, y: snake[0].y };
+  switch (direction) {
+    case "up": head.y--; break;
+    case "down": head.y++; break;
+    case "left": head.x--; break;
+    case "right": head.x++; break;
+  }
+  snake.unshift(head);
+
+  // 檢查是否吃到食物
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    generateFood();
+  } else {
+    snake.pop();
+  }
+
+  // 檢查是否碰撞
+  if (head.x < 0 || head.x >= canvas.width / gridSize || head.y < 0 || head.y >= canvas.height / gridSize || checkCollision()) {
+    clearInterval(gameInterval);
+    alert("遊戲結束！得分：" + score);
+  }
+
+  // 清除畫布
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 繪制蛇和食物
+  snake.forEach(drawSnakePart);
+  drawFood();
+}
+
+// 檢查蛇是否撞到自己
+function checkCollision() {
+  for (let i = 1; i < snake.length; i++) {
+    if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// 隨機生成食物
+function generateFood() {
+  food = {
+    x: Math.floor(Math.random() * (canvas.width / gridSize)),
+    y: Math.floor(Math.random() * (canvas.height / gridSize))
+  };
+}
+
+// 處理鍵盤輸入
+document.addEventListener("keydown", e => {
+  switch (e.key) {
+    case "ArrowUp": if (direction !== "down") direction = "up"; break;
+    case "ArrowDown": if (direction !== "up") direction = "down"; break;
+    case "ArrowLeft": if (direction !== "right") direction = "left"; break;
+    case "ArrowRight": if (direction !== "left") direction = "right"; break;
+  }
+});
+
+// 開始遊戲
+generateFood();
+gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
+
+</script>
+</body>
+</html>
