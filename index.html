@@ -2,144 +2,229 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>新年</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新年特別版</title>
     <style>
+        :root {
+            --soft-red: #ff7675;
+            --soft-pink: #fff0f0;
+            --gold: #ffd700;
+            --text-color: #5d4037;
+        }
         body {
-            background-color: #fff5f5;
+            font-family: "Microsoft JhengHei", sans-serif;
+            margin: 0;
+            background-color: #fefaf6;
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-family: "Microsoft JhengHei", sans-serif;
-            margin: 0;
-            overflow: hidden;
         }
-        h1 { color: #d32f2f; margin-top: 20px; }
-        #game-container {
+
+        /* 分頁標籤樣式 */
+        .tabs {
+            display: flex;
+            background: #fff;
+            width: 100%;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .tab-btn {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #888;
+            transition: 0.3s;
+        }
+        .tab-btn.active {
+            color: var(--soft-red);
+            border-bottom: 3px solid var(--soft-red);
+        }
+
+        .content { display: none; width: 100%; max-width: 800px; padding: 20px; text-align: center; }
+        .content.active { display: block; }
+
+        /* --- 春聯書寫區 --- */
+        #writing-canvas {
+            background-color: var(--soft-red);
+            border: 10px solid #fab1a0;
+            border-radius: 5px;
+            cursor: url('https://cur.cursors-4u.net/others/oth-2/oth191.cur'), crosshair; /* 模擬毛筆游標 */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+
+        /* --- 紅包遊戲區 --- */
+        #game-area {
             position: relative;
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             height: 500px;
-            background-color: #ffebee;
-            border: 5px solid #ffab91;
-            border-radius: 15px;
+            background-color: var(--soft-pink);
+            border: 5px solid #ffadad;
+            border-radius: 20px;
+            margin: 20px auto;
             overflow: hidden;
-            cursor: none;
-        }
-        .info {
-            font-size: 1.2rem;
-            color: #5d4037;
-            margin: 10px;
+            touch-action: none;
         }
         #basket {
             position: absolute;
-            bottom: 10px;
-            width: 60px;
-            height: 40px;
-            background-color: #ff8a80;
-            border-radius: 10px 10px 20px 20px;
+            bottom: 20px;
+            width: 70px;
+            height: 50px;
+            font-size: 40px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
         }
         .hongbao {
             position: absolute;
-            width: 30px;
-            height: 40px;
+            width: 35px;
+            height: 45px;
             background-color: #ef5350;
-            border-radius: 4px;
-            border: 2px solid #ffca28;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            color: var(--gold);
+            font-weight: bold;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #ffca28;
+        }
+        .timer-box { font-size: 1.2rem; color: #d32f2f; font-weight: bold; margin: 10px; }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background-color: var(--soft-red);
+            color: white;
+            cursor: pointer;
             font-weight: bold;
-            font-size: 12px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
-    <h1>新年</h1>
-    <div class="info">分數: <span id="score">0</span> | 剩餘時間: <span id="timer">30</span>s</div>
-    
-    <div id="game-container" id="gameArea">
-        <div id="basket">🧧</div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('newYear')">新年</button>
+        <button class="tab-btn" onclick="openTab('calligraphy')">寫春聯</button>
+        <button class="tab-btn" onclick="openTab('game')">紅包接接樂</button>
+    </div>
+
+    <div id="newYear" class="content active">
+        <h1>新年</h1>
+        <p>農曆新年是華人文化中最盛大的節日，象徵著萬象更新與團圓。</p>
+        <div style="font-size: 50px;">🧧 🍊 🧨</div>
+    </div>
+
+    <div id="calligraphy" class="content">
+        <h1>新年揮毫</h1>
+        <p>在下方紅紙上寫下你的新年願望吧！</p>
+        <canvas id="writing-canvas" width="250" height="550"></canvas>
+        <br>
+        <button onclick="clearCanvas()">重新書寫</button>
+        <button onclick="saveCanvas()">儲存作品</button>
+    </div>
+
+    <div id="game" class="content">
+        <h1>搶紅包大作戰</h1>
+        <div class="timer-box">時間剩餘: <span id="time-left">30</span> 秒 | 分數: <span id="score">0</span></div>
+        <div id="game-area">
+            <div id="basket">🧺</div>
+        </div>
+        <button id="start-btn" onclick="startGame()">開始遊戲</button>
     </div>
 
     <script>
-        const container = document.getElementById('game-container');
-        const basket = document.getElementById('basket');
-        const scoreElement = document.getElementById('score');
-        const timerElement = document.getElementById('timer');
+        // 分頁切換
+        function openTab(tabId) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
 
+        // --- 寫春聯邏輯 (可視化筆跡) ---
+        const canvas = document.getElementById('writing-canvas');
+        const ctx = canvas.getContext('2d');
+        let painting = false;
+
+        ctx.strokeStyle = "#ffd700"; // 金墨水
+        ctx.lineWidth = 7;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        function startPosition(e) { painting = true; draw(e); }
+        function finishedPosition() { painting = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!painting) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+            const y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        window.addEventListener('mouseup', finishedPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = '春聯.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // --- 紅包遊戲邏輯 (含停止時間) ---
         let score = 0;
-        let timeLeft = 30; // 遊戲時間設定（秒）
-        let gameActive = true;
+        let timeLeft = 30;
+        let gameActive = false;
+        let gameTimer, spawnTimer;
+        const basket = document.getElementById('basket');
+        const gameArea = document.getElementById('game-area');
 
-        // 籃子跟隨滑鼠移動
-        container.addEventListener('mousemove', (e) => {
+        // 籃子移動
+        gameArea.addEventListener('mousemove', (e) => {
             if (!gameActive) return;
-            let rect = container.getBoundingClientRect();
+            let rect = gameArea.getBoundingClientRect();
             let x = e.clientX - rect.left - basket.offsetWidth / 2;
-            if (x < 0) x = 0;
-            if (x > container.offsetWidth - basket.offsetWidth) x = container.offsetWidth - basket.offsetWidth;
+            x = Math.max(0, Math.min(x, gameArea.offsetWidth - basket.offsetWidth));
             basket.style.left = x + 'px';
         });
 
-        // 產生紅包
-        function createHongbao() {
-            if (!gameActive) return;
-            const hb = document.createElement('div');
-            hb.className = 'hongbao';
-            hb.innerText = '福';
-            hb.style.left = Math.random() * (container.offsetWidth - 30) + 'px';
-            hb.style.top = '-50px';
-            container.appendChild(hb);
+        function startGame() {
+            if (gameActive) return;
+            score = 0;
+            timeLeft = 30;
+            gameActive = true;
+            document.getElementById('score').innerText = score;
+            document.getElementById('start-btn').style.display = 'none';
+            
+            // 倒數計時
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
 
-            let top = -50;
-            const fallInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(fallInterval);
-                    hb.remove();
-                    return;
-                }
-                top += 4; // 下落速度
-                hb.style.top = top + 'px';
-
-                // 碰撞檢測
-                let bRect = basket.getBoundingClientRect();
-                let hRect = hb.getBoundingClientRect();
-
-                if (hRect.bottom >= bRect.top && hRect.right >= bRect.left && hRect.left <= bRect.right && hRect.top <= bRect.bottom) {
-                    score++;
-                    scoreElement.innerText = score;
-                    clearInterval(fallInterval);
-                    hb.remove();
-                }
-
-                if (top > container.offsetHeight) {
-                    clearInterval(fallInterval);
-                    hb.remove();
-                }
-            }, 20);
-        }
-
-        // 遊戲計時器
-        const countdown = setInterval(() => {
-            timeLeft--;
-            timerElement.innerText = timeLeft;
-            if (timeLeft <= 0) {
-                gameActive = false;
-                clearInterval(countdown);
-                clearInterval(spawnInterval);
-                alert("恭喜發財！遊戲結束！\n你一共接到了 " + score + " 個紅包！");
-                location.reload(); // 重新開始
-            }
-        }, 1000);
-
-        const spawnInterval = setInterval(createHongbao, 600);
-
-    </script>
-</body>
-</html>
+            // 產生紅包
+            spawnTimer = setInterval(() => {
+                if (!gameActive) return;
+                const
