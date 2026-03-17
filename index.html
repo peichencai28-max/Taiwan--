@@ -1,122 +1,125 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>新年 - 手寫春聯</title>
-    <style>
-        body {
-            background-color: #fdf2f2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: "Microsoft JhengHei", sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 { color: #b71c1c; margin-bottom: 10px; }
-        .controls { margin-bottom: 15px; }
-        
-        /* 柔和的紅色春聯紙 */
-        #canvas-container {
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 8px solid #ffab91;
-            border-radius: 5px;
-        }
-        canvas {
-            background-color: #ff5252; /* 柔和紅 */
-            cursor: crosshair;
-            display: block;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #d32f2f;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover { background-color: #ff8a80; }
-        .tip { color: #795548; font-size: 0.9rem; margin-top: 10px; }
-    </style>
+<title>可愛版貪吃蛇</title>
+<style>
+body {
+  background-color: #f0f8ff; /* 淺藍色背景 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+#gameCanvas {
+  background-color: #fce4ec; /* 柔和的粉紅色遊戲背景 */
+  border: 5px solid #ff80ab; /* 柔和的粉紅色邊框 */
+  border-radius: 10px; /* 圓角邊框 */
+}
+</style>
 </head>
 <body>
 
-    <h1>新年</h1>
-    
-    <div class="controls">
-        <button onclick="clearCanvas()">重新書寫</button>
-        <button onclick="download()">儲存春聯</button>
-    </div>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
 
-    <div id="canvas-container">
-        <canvas id="chunlian" width="200" height="600"></canvas>
-    </div>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    <p class="tip">✨ 提示：使用滑鼠或手指在紅紙上揮毫吧！</p>
+const gridSize = 20;
+let snake = [{ x: 10, y: 10 }];
+let food = {};
+let direction = "right";
+let score = 0;
+let gameInterval;
 
-    <script>
-        const canvas = document.getElementById('chunlian');
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
+// 可愛的小圖案 (這裡使用簡單的圓形和愛心代替)
+function drawSnakePart(part) {
+  ctx.fillStyle = "#ff80ab"; /* 柔和的粉紅色蛇 */
+  ctx.beginPath();
+  ctx.arc(part.x * gridSize + gridSize / 2, part.y * gridSize + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
+  ctx.fill();
+}
 
-        // 設定筆觸樣式：金墨水
-        ctx.strokeStyle = "#ffd700"; // 金色
-        ctx.lineWidth = 8;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
+function drawFood() {
+  ctx.fillStyle = "#ffc107"; /* 黃色食物 */
+  ctx.beginPath();
+  // 畫一個簡單的愛心形狀
+  ctx.moveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize, food.y * gridSize, food.x * gridSize, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 2, food.x * gridSize + gridSize, food.y * gridSize + gridSize / 4);
+  ctx.bezierCurveTo(food.x * gridSize + gridSize, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize, food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 4);
+  ctx.fill();
+}
 
-        // 開始繪圖
-        function start(e) {
-            drawing = true;
-            draw(e);
-        }
+// 遊戲邏輯
+function gameLoop() {
+  // 移動蛇
+  const head = { x: snake[0].x, y: snake[0].y };
+  switch (direction) {
+    case "up": head.y--; break;
+    case "down": head.y++; break;
+    case "left": head.x--; break;
+    case "right": head.x++; break;
+  }
+  snake.unshift(head);
 
-        // 結束繪圖
-        function stop() {
-            drawing = false;
-            ctx.beginPath();
-        }
+  // 檢查是否吃到食物
+  if (head.x === food.x && head.y === food.y) {
+    score++;
+    generateFood();
+  } else {
+    snake.pop();
+  }
 
-        // 繪圖過程
-        function draw(e) {
-            if (!drawing) return;
-            
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX || e.touches[0].clientX) - rect.left;
-            const y = (e.clientY || e.touches[0].clientY) - rect.top;
+  // 檢查是否碰撞
+  if (head.x < 0 || head.x >= canvas.width / gridSize || head.y < 0 || head.y >= canvas.height / gridSize || checkCollision()) {
+    clearInterval(gameInterval);
+    alert("遊戲結束！得分：" + score);
+  }
 
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
+  // 清除畫布
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 監聽滑鼠事件
-        canvas.addEventListener('mousedown', start);
-        canvas.addEventListener('mousemove', draw);
-        window.addEventListener('mouseup', stop);
+  // 繪制蛇和食物
+  snake.forEach(drawSnakePart);
+  drawFood();
+}
 
-        // 監聽觸控事件 (手機平板)
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
-        canvas.addEventListener('touchend', stop);
+// 檢查蛇是否撞到自己
+function checkCollision() {
+  for (let i = 1; i < snake.length; i++) {
+    if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
+      return true;
+    }
+  }
+  return false;
+}
 
-        // 清除畫布
-        function clearCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+// 隨機生成食物
+function generateFood() {
+  food = {
+    x: Math.floor(Math.random() * (canvas.width / gridSize)),
+    y: Math.floor(Math.random() * (canvas.height / gridSize))
+  };
+}
 
-        // 儲存圖片
-        function download() {
-            const link = document.createElement('a');
-            link.download = '我的春聯.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-    </script>
+// 處理鍵盤輸入
+document.addEventListener("keydown", e => {
+  switch (e.key) {
+    case "ArrowUp": if (direction !== "down") direction = "up"; break;
+    case "ArrowDown": if (direction !== "up") direction = "down"; break;
+    case "ArrowLeft": if (direction !== "right") direction = "left"; break;
+    case "ArrowRight": if (direction !== "left") direction = "right"; break;
+  }
+});
+
+// 開始遊戲
+generateFood();
+gameInterval = setInterval(gameLoop, 100); // 調整遊戲速度
+
+</script>
 </body>
 </html>
